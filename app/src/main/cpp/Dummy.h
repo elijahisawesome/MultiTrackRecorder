@@ -1,0 +1,9 @@
+//
+// Created by chees on 9/19/2022.
+//
+
+#ifndef MULTITRACKRECORDER_DUMMY_H
+#define MULTITRACKRECORDER_DUMMY_H
+
+
+#endif //MULTITRACKRECORDER_DUMMY_H
