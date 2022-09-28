@@ -22,6 +22,7 @@ public class Recordings {
 
     private static final int NUM_OF_STEMS = 4;
     private static final int SUB_STEM_FIELD_COUNT = 3;
+    private static final int RECORDING_FREQUENCY = 48000;
 
     //Array of Recordings, broken up into blocks of 4.
     Recording[] recordingArray = new Recording[4];
@@ -61,11 +62,12 @@ public class Recordings {
     }
 
     private Recording readFile(int page, int stemNum){
-        Recording x;
+        Recording x = new Recording();
         String[] y = new String[SUB_STEM_FIELD_COUNT];
 
         File curAudio = new File(primaryExternalStorage.getPath()+"/"+page+"/"+stemNum+"/audio.mp3");
         File curData = new File(primaryExternalStorage.getPath()+"/"+page+"/"+stemNum+"/data.txt");
+
 
         try
         {
@@ -83,9 +85,14 @@ public class Recordings {
             x = new Recording();
         }
 
-    return x;
+        return x;
     }
-
+    public void PlayAll(){
+        startPlayback(primaryExternalStorage.getPath()+"/Music/0/0/audio.wav", RECORDING_FREQUENCY);
+    }
+    public void StopAll(){
+        stopPlayback();
+    }
     public void writeAudio(MediaRecorder mr, int page, int stemNum){
         mr.setAudioSource(MediaRecorder.AudioSource.MIC);
         mr.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
@@ -113,6 +120,7 @@ public class Recordings {
         }
     }
 
+
     public String getFilePath(int page, int stemNum, boolean audio)
     {
         ContextWrapper contextWrapper = new ContextWrapper(context);
@@ -120,7 +128,7 @@ public class Recordings {
 
         new File((musicDirectory), (page+"/"+stemNum)).mkdirs();
         if(audio){
-            return new File (musicDirectory, (page+"/"+stemNum+"/audio.mp3")).getPath();
+            return new File (musicDirectory, (page+"/"+stemNum+"/audio.wav")).getPath();
         }
         else{
             return new File (musicDirectory, (page+"/"+stemNum+"/data.txt") ).getPath();
@@ -128,6 +136,16 @@ public class Recordings {
 
 
     }
+    public boolean startRecord(int page,int track, int freq){
+        return startRecording(getFilePath(page,track, true), freq);
+    }
+    public void stopRecord(){
+        stopRecording();
+    }
+    private native boolean startRecording(String path,int freq);
+    private native boolean stopRecording();
+    private native boolean startPlayback(String path, int freq);
+    private native boolean stopPlayback();
     /*
     private String getFilePath(){
         ContextWrapper contextWrapper = new ContextWrapper();

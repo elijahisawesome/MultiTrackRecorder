@@ -25,6 +25,7 @@ OboeRecorder::OboeRecorder() = default;
 
 oboe::DataCallbackResult OboeRecorder::onAudioReady(oboe::AudioStream *oboeStream, void *audioData, int32_t numFrames) {
     if(isRecording){
+        LOGE("HELLO!");
         return oboe::DataCallbackResult::Continue;
     }
     return oboe::DataCallbackResult::Stop;
@@ -70,7 +71,6 @@ void OboeRecorder::StartAudioRecorder(const char *path, const int freq)
     write_word( f,      1, 2 );  // PCM - integer samples
     write_word( f,      numChannels, 2 );  // one channel (mono) or two channels (stereo file)
     write_word( f,  freq, 4 );  // samples per second (Hz)
-    //write_word( f, 176400, 4 );  // (Sample Rate * BitsPerSample * Channels) / 8
     write_word( f,(freq * bitsPerSample * numChannels) / 8, 4 );  // (Sample Rate * BitsPerSample * Channels) / 8
     write_word( f,      4, 2 );  // data block size (size of two integer samples, one for each channel, in bytes)
     write_word( f,     bitsPerSample, 2 );  // number of bits per sample (use a multiple of 8)

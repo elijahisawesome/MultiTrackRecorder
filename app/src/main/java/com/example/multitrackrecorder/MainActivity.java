@@ -37,6 +37,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String[] AUDIO_API_OPTIONS = {"Unspecified", "OpenSL ES", "AAudio"};
     private static final int OBOE_API_OPENSL_ES = 1;
     private static final int RECORDING_FREQUENCY = 48000;
+    private boolean playingBack = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -95,7 +96,16 @@ public class MainActivity extends AppCompatActivity {
 
 
     public void clickPlay(View view){
-        playBkgThread();
+        if(playingBack){
+            playingBack = false;
+            stopBkgThread();
+            return;
+        }
+        if(!playingBack) {
+            playingBack = true;
+            playBkgThread();
+            return;
+        }
     }
     private void playBkgThread(){
         Runnable myRunnable = new Runnable(){
@@ -112,15 +122,30 @@ public class MainActivity extends AppCompatActivity {
         Thread begin = new Thread(myRunnable);
         begin.start();
     }
+    private void stopBkgThread(){
+        Runnable myRunnable = new Runnable(){
+            @Override
+            public void run(){
+                try{
+                    recordingsManager.stopRecording();
+                }
+                catch(Exception e){
+                    e.printStackTrace();
+                }
+            }
+        };
+        Thread begin = new Thread(myRunnable);
+        begin.start();
+    }
     public void clickRecord(View view){
         Runnable myRunnable = new Runnable(){
             @Override
             public void run(){
                 try{
-                    System.out.println(getFilePath());
-                    startRecording(getFilePath(),RECORDING_FREQUENCY);
+                    //System.out.println(getFilePath());
+                    //recordingsManager.record(getFilePath(),RECORDING_FREQUENCY);
                     //Toast.makeText(this, "Recording...", Toast.LENGTH_LONG).show();
-                    //recordingsManager.record();
+                    recordingsManager.record(RECORDING_FREQUENCY);
                 }
                 catch(Exception e){
                     e.printStackTrace();
@@ -149,7 +174,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void run(){
                 try{
-                    stopRecording();
+                    recordingsManager.stopRecording();
                     //recordingsManager.record();
 
                 }
@@ -187,8 +212,8 @@ public class MainActivity extends AppCompatActivity {
         recordingsManager.switchTracks(x);
     }
 
-    private native boolean startRecording(String path,int freq);
-    private native boolean stopRecording();
+    //private native boolean startRecording(String path,int freq);
+    //private native boolean stopRecording();
     private native int getInt();
 
 }

@@ -16,9 +16,10 @@ public class RecordingsPackager {
         recordings.setContext(context);
     }
 
-    public void record(){
-        recordings.writeAudio(mediaRecorder,page,currentTrack);
+    public void record(int RECORDING_FREQUENCY){
+        recordings.startRecord(page,currentTrack,RECORDING_FREQUENCY);
     }
+    public void stopRecording(){recordings.StopAll();}
     public void switchTracks(int newTrack){
         currentTrack = newTrack;
     }
@@ -28,6 +29,7 @@ public class RecordingsPackager {
     }
 
     public void playAll(){
+        recordings.PlayAll();
         /*
         mediaPlayer = new MediaPlayer();
             mediaPlayer.setDataSource(recordingsManager.getAudioFilePath());

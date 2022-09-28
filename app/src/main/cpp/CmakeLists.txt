@@ -1,16 +1,21 @@
 cmake_minimum_required(VERSION 3.4.1)
 
+set(LIBSND_DIR libsndfile)
 
+add_subdirectory(${LIBSND_DIR} ./libsndfile)
+
+include_directories(./libsndfile/include)
 # Build our own native library
 add_library (
         native-lib
         SHARED
         native-lib.cpp
         OboeRecorder.cpp
+        OboePlayback.cpp
         )
 # Find the Oboe package
 find_package (oboe REQUIRED CONFIG)
 
 
 # Specify the libraries which our native library is dependent on, including Oboe
-target_link_libraries(native-lib log oboe::oboe)
+target_link_libraries(native-lib log oboe::oboe sndfile)
