@@ -22,7 +22,7 @@ public class Recordings {
 
     private static final int NUM_OF_STEMS = 4;
     private static final int SUB_STEM_FIELD_COUNT = 3;
-    private static final int RECORDING_FREQUENCY = 48000;
+    private static final int RECORDING_FREQUENCY = 44100;
 
     //Array of Recordings, broken up into blocks of 4.
     Recording[] recordingArray = new Recording[4];
@@ -90,6 +90,7 @@ public class Recordings {
     public void PlayAll(){
         startPlayback(primaryExternalStorage.getPath()+"/Music/0/0/audio.wav", RECORDING_FREQUENCY);
     }
+    public void StopRecording(){stopRecording();}
     public void StopAll(){
         stopPlayback();
     }

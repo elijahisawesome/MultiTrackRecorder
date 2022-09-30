@@ -4,6 +4,7 @@
 #include <fstream>
 #include <android/log.h>
 #include "OboeRecorder.h"
+#include "sndfile.h"
 
 //Yoinked from https://github.com/reuniware/OboeRecorder
 
@@ -24,11 +25,15 @@ using namespace little_endian_io;
 OboeRecorder::OboeRecorder() = default;
 
 oboe::DataCallbackResult OboeRecorder::onAudioReady(oboe::AudioStream *oboeStream, void *audioData, int32_t numFrames) {
-    if(isRecording){
-        LOGE("HELLO!");
-        return oboe::DataCallbackResult::Continue;
+
+    for(int i = 0; i < numFrames; i++){
+        reinterpret_cast<int *>(audioData)[i]*=6;
     }
-    return oboe::DataCallbackResult::Stop;
+
+    sf_write_short(infile, reinterpret_cast<int16_t *>(audioData),numFrames);
+
+
+    return oboe::DataCallbackResult::Continue;
 }
 
 OboeRecorder* OboeRecorder::singleton;
@@ -41,6 +46,8 @@ OboeRecorder* OboeRecorder::get() {
 }
 
 void OboeRecorder::StopAudioRecorder() {
+    sf_write_sync(infile);
+    sf_close(infile);
     isRecording = false;
 }
 void OboeRecorder::StartAudioRecorder(const char *path, const int freq)
@@ -49,23 +56,54 @@ void OboeRecorder::StartAudioRecorder(const char *path, const int freq)
     oboe::AudioStreamBuilder builder;
     builder.setDeviceId(0);
     builder.setDirection(oboe::Direction::Input);
-    builder.setPerformanceMode(oboe::PerformanceMode::None);
+    builder.setPerformanceMode(oboe::PerformanceMode::LowLatency);
     builder.setFormat(oboe::AudioFormat::I16);
     builder.setChannelCount(oboe::ChannelCount::Mono);
     builder.setSampleRate(freq);
     builder.setSharingMode(oboe::SharingMode::Shared);
-    builder.setAudioApi(oboe::AudioApi::OpenSLES);
-    //builder.setCallback(this);
+    builder.setAudioApi(oboe::AudioApi::AAudio);
+    builder.setCallback(this);
 
     int sampleRate = freq;
     int bitsPerSample = 16;
     int numChannels = 1;// 2= stereo
 
+
     std::ofstream f;
     //const char *hardPath = "/storage/emulated/0/Android/data/com.example.multitrackrecorder/files/Music/testRecording.wav";
 
-    f.open(path, std::ios::binary);
+    //f.open(path, std::ios::binary);
+
+    SF_INFO sfinfo = {0};
+
+    //memset(&sfinfo, 0, sizeof(sfinfo));
+
+    sfinfo.channels=1;
+    sfinfo.samplerate=freq;
+    sfinfo.format = (SF_FORMAT_WAV | SF_FORMAT_PCM_16);
+    const char *infilename = path;
+
+    if(!(infile = sf_open (infilename, SFM_WRITE, &sfinfo))){
+        LOGE("Error Opening File");
+        LOGE("%s", infilename);
+        LOGE("%s", sf_strerror(NULL));
+        return;
+    }
+
+    oboe::AudioStream *stream;
+    oboe::Result r = builder.openStream(&stream);
+
+    if (r != oboe::Result::OK) {
+        LOGE("Result Fucked");
+        return;
+    }
+
+    r = stream->requestStart();
+    if (r != oboe::Result::OK) {
+        return;
+    }
     // Write the file headers
+    /*
     f << "RIFF----WAVEfmt ";     // (chunk size to be filled in later)
     write_word( f,     16, 4 );  // no extension data
     write_word( f,      1, 2 );  // PCM - integer samples
@@ -78,18 +116,10 @@ void OboeRecorder::StartAudioRecorder(const char *path, const int freq)
     // Write the data chunk header
     size_t data_chunk_pos = f.tellp();
     f << "data----";  // (chunk size to be filled in later)
+    */
 
-    oboe::AudioStream *stream;
-    oboe::Result r = builder.openStream(&stream);
 
-    if (r != oboe::Result::OK) {
-        return;
-    }
-
-    r = stream->requestStart();
-    if (r != oboe::Result::OK) {
-        return;
-    }
+    /*
     auto a = stream->getState();
     if (a == oboe::StreamState::Started) {
 
@@ -143,12 +173,18 @@ void OboeRecorder::StartAudioRecorder(const char *path, const int freq)
         // Fix the file header to contain the proper RIFF chunk size, which is (file size - 8) bytes
         f.seekp(0 + 4);
         write_word(f, file_length - 8, 4);
+
+        SF_INFO sfinfo;
+        sfinfo.channels=1;
+        sfinfo.samplerate=48000;
+        sfinfo.format = SF_FORMAT_WAV;
+
         f.close();
 
         LOGE("Done Recording!");
         //LOGE(path);
         singleton = nullptr;
-    }
+    }*/
 }
 
 

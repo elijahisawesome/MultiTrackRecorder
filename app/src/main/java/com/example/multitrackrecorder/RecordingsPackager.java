@@ -19,7 +19,7 @@ public class RecordingsPackager {
     public void record(int RECORDING_FREQUENCY){
         recordings.startRecord(page,currentTrack,RECORDING_FREQUENCY);
     }
-    public void stopRecording(){recordings.StopAll();}
+    public void stopRecording(){recordings.StopRecording();}
     public void switchTracks(int newTrack){
         currentTrack = newTrack;
     }
@@ -28,15 +28,8 @@ public class RecordingsPackager {
         return recordings.getFilePath(page,currentTrack,true);
     }
 
-    public void playAll(){
-        recordings.PlayAll();
-        /*
-        mediaPlayer = new MediaPlayer();
-            mediaPlayer.setDataSource(recordingsManager.getAudioFilePath());
-            mediaPlayer.prepare();
-            mediaPlayer.start();
-         */
-    }
+    public void playAll(){recordings.PlayAll();}
+    public void stopPlayback(){recordings.StopAll();}
 
     //Recording1
 

@@ -36,7 +36,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int[] BUFFER_SIZE_OPTIONS = {0, 1, 2, 4, 8};
     private static final String[] AUDIO_API_OPTIONS = {"Unspecified", "OpenSL ES", "AAudio"};
     private static final int OBOE_API_OPENSL_ES = 1;
-    private static final int RECORDING_FREQUENCY = 48000;
+    private static final int RECORDING_FREQUENCY = 44100;
     private boolean playingBack = false;
 
     @Override
@@ -127,7 +127,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void run(){
                 try{
-                    recordingsManager.stopRecording();
+                    recordingsManager.stopPlayback();
                 }
                 catch(Exception e){
                     e.printStackTrace();

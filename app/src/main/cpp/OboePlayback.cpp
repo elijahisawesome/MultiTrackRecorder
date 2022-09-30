@@ -24,7 +24,7 @@ bool OboePlayback::startPlayback(const char *path, int freq) {
     builder.setChannelCount(oboe::ChannelCount::Mono);
     builder.setSampleRate(freq);
     builder.setSharingMode(oboe::SharingMode::Shared);
-    builder.setAudioApi(oboe::AudioApi::OpenSLES);
+    builder.setAudioApi(oboe::AudioApi::AAudio);
     builder.setCallback(this);
 
 
@@ -35,11 +35,15 @@ bool OboePlayback::startPlayback(const char *path, int freq) {
     result = stream->requestStart();
     auto a = stream->getState();
 
-    SF_INFO sfinfo;
+    SF_INFO sfinfo = {0};
+
+    sfinfo.channels=1;
+    sfinfo.samplerate=freq;
+    sfinfo.format = (SF_FORMAT_WAV | SF_FORMAT_PCM_16);
     int readcount;
     const char *infilename = path;
 
-    memset(&sfinfo, 0, sizeof(sfinfo));
+    //
 
 
     if(!(infile = sf_open (infilename, SFM_READ, &sfinfo))){
@@ -67,7 +71,6 @@ OboePlayback* OboePlayback::get(){
     return singleton;
 }
 bool OboePlayback::stopPlayback(){
-    LOGE("BEANS");
     stream->requestStop();
     stream->close();
     sf_close(infile);
@@ -77,10 +80,18 @@ bool OboePlayback::stopPlayback(){
 }
 
 oboe::DataCallbackResult OboePlayback::onAudioReady(oboe::AudioStream *oboeStream, void *audioData,int32_t numFrames) {
+    //__android_log_print(ANDROID_LOG_INFO, "OboePlayback", "numFrames = %d", numFrames);
+    /*
 
-    sf_seek(infile, 0, SEEK_END);
-    sf_read_float(infile, static_cast<float *>(audioData), numFrames);
-    //LOGE("%s", reinterpret_cast<const char *>(numFrames));
+    for(int i = 0; i < numFrames; i++){
+        reinterpret_cast<int *>(audioData)[i]*=50000;
+    }
+    float *dataPtr = reinterpret_cast<float *>(audioData);
+
+    */
+    sf_readf_short(infile, reinterpret_cast<int16_t *>(audioData), numFrames);
+
+
     return oboe::DataCallbackResult::Continue;
 
 
